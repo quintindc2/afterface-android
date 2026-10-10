@@ -1,0 +1,66 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Fetch MediaPipe model and WASM binaries
+        run: |
+          set -euo pipefail
+          WWW="app/src/main/assets/www"
+          mkdir -p "$WWW/models" "$WWW/mediapipe"
+
+          echo "Downloading face_landmarker.task…"
+          curl -fsSL -o "$WWW/models/face_landmarker.task" \
+            "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
+
+          echo "Downloading MediaPipe vision WASM package…"
+          npm pack @mediapipe/tasks-vision@0.10.21
+          tar -xzf mediapipe-tasks-vision-*.tgz
+          cp package/wasm/vision_wasm_internal.wasm "$WWW/mediapipe/"
+          cp package/wasm/vision_wasm_nosimd_internal.wasm "$WWW/mediapipe/"
+          # Keep JS glue in sync if missing from repo
+          cp -n package/wasm/vision_wasm_internal.js "$WWW/mediapipe/" || true
+          cp -n package/wasm/vision_wasm_nosimd_internal.js "$WWW/mediapipe/" || true
+          cp -n package/vision_bundle.mjs "$WWW/mediapipe/" || true
+          rm -rf package mediapipe-tasks-vision-*.tgz
+
+          ls -lh "$WWW/models" "$WWW/mediapipe"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Generate wrapper and build debug APK
+        run: |
+          set -euo pipefail
+          gradle wrapper --gradle-version 8.5
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: afterface-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14

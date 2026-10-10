@@ -1,0 +1,19 @@
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+app/build/
+*.apk
+*.aab
+*.ap_
+*.dex
+# MediaPipe binaries (fetched in CI / setup script)
+*.wasm
+*.task
+app/src/main/assets/www/models/
+app/src/main/assets/www/mediapipe/*.wasm
