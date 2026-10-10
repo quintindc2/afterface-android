@@ -21,21 +21,21 @@ jobs:
           SRC="app/src/main/assets/www/_src"
           OUT="app/src/main/assets/www/app.js"
 
-          if [ -f "$SRC/gz_0.b64" ]; then
-            echo "Decoding gzip-compressed engine…"
-            # Explicit order; strip newlines that git may add
-            for i in 0 1 2 3 4 5 6 7 8 9; do
-              tr -d '\n\r' < "$SRC/gz_${i}.b64"
+          if [ -f "$SRC/e0.b64" ]; then
+            echo "Decoding complete face-swap engine…"
+            for i in 0 1 2 3 4 5 6 7 8 9 10 11; do
+              tr -d '\n\r' < "$SRC/e${i}.b64"
             done | base64 -d | gzip -d > "$OUT"
             echo "Assembled engine: $(wc -c < "$OUT") bytes"
-            head -c 80 "$OUT"; echo
+            head -c 100 "$OUT"; echo
             grep -q paintFace "$OUT"
             grep -q replaceFace "$OUT"
             grep -q delaunay "$OUT"
             grep -q getLandmarker "$OUT"
+            grep -q blendExpression "$OUT"
             echo "Engine checks passed"
           else
-            echo "ERROR: gz_0.b64 missing"
+            echo "ERROR: e0.b64 missing"
             ls -la "$SRC" || true
             exit 1
           fi
