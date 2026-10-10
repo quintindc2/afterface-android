@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f0e0c" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Afterface</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="mark" aria-hidden="true">A</div>
+      <div>
+        <p class="eyebrow">Standalone · offline</p>
+        <h1>Afterface</h1>
+      </div>
+    </header>
+
+    <p class="lede">
+      Pick a portrait and a clip from your gallery. The face is swapped on this device — nothing is uploaded.
+    </p>
+
+    <section class="picks">
+      <label class="card">
+        <input id="photoInput" type="file" accept="image/*" hidden />
+        <div id="photoPreview" class="preview empty">
+          <span class="num">1</span>
+          <strong>Portrait</strong>
+          <span class="hint">Tap to choose photo</span>
+        </div>
+      </label>
+      <label class="card">
+        <input id="videoInput" type="file" accept="video/*" hidden />
+        <div id="videoPreview" class="preview empty">
+          <span class="num">2</span>
+          <strong>Clip</strong>
+          <span class="hint">Tap to choose video</span>
+        </div>
+      </label>
+    </section>
+
+    <section class="trim" id="trimSection" hidden>
+      <div class="row">
+        <label>Start <span id="startLabel">0.0s</span></label>
+        <input id="startRange" class="range" type="range" min="0" max="100" step="0.1" value="0" />
+      </div>
+      <div class="row">
+        <label>End <span id="endLabel">0.0s</span></label>
+        <input id="endRange" class="range" type="range" min="0" max="100" step="0.1" value="100" />
+      </div>
+      <p class="fine" id="trimHint">Clip length will be limited for on-phone processing.</p>
+      <video id="trimVideo" class="trim-video" playsinline muted></video>
+    </section>
+
+    <section class="controls">
+      <div class="row">
+        <label>Strength <span id="strengthLabel">90%</span></label>
+        <input id="strength" class="range" type="range" min="55" max="100" value="90" />
+      </div>
+      <div class="row">
+        <label>Expression <span id="exprLabel">100%</span></label>
+        <input id="expression" class="range" type="range" min="0" max="100" value="100" />
+      </div>
+      <p class="fine">Expression follows the clip (smile, talk, blink). Lower it for a calmer face.</p>
+    </section>
+
+    <button id="swapBtn" class="btn primary" disabled>Replace face</button>
+    <button id="cancelBtn" class="btn ghost is-hidden">Cancel</button>
+    <p id="status" class="status" role="status"></p>
+
+    <section class="stage" id="stage">
+      <canvas id="outCanvas" hidden></canvas>
+      <video id="resultVideo" class="result" controls playsinline hidden></video>
+      <div id="emptyStage" class="empty-stage">
+        <p>Your swapped clip appears here.</p>
+      </div>
+      <button id="saveBtn" class="btn primary is-hidden">Save to phone</button>
+    </section>
+
+    <p class="disclaimer">
+      Only swap faces you have permission to use. Hair and head outline stay from the clip.
+    </p>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
