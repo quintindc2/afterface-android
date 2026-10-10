@@ -15,6 +15,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Assemble face-swap engine
+        run: |
+          set -euo pipefail
+          SRC="app/src/main/assets/www/_src"
+          OUT="app/src/main/assets/www/app.js"
+          if [ -d "$SRC" ] && ls "$SRC"/t*.js >/dev/null 2>&1; then
+            cat $(ls "$SRC"/t*.js | sort -V) > "$OUT"
+            echo "Assembled engine: $(wc -c < "$OUT") bytes"
+            # Must include core functions
+            grep -q paintFace "$OUT"
+            grep -q replaceFace "$OUT"
+            grep -q delaunay "$OUT"
+          else
+            echo "WARNING: source parts missing; using existing app.js"
+            wc -c "$OUT" || true
+          fi
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -33,11 +50,9 @@ jobs:
           WWW="app/src/main/assets/www"
           mkdir -p "$WWW/models" "$WWW/mediapipe"
 
-          echo "Downloading face_landmarker.task…"
           curl -fsSL -o "$WWW/models/face_landmarker.task" \
             "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
 
-          echo "Downloading MediaPipe vision WASM package…"
           npm pack @mediapipe/tasks-vision@0.10.21
           tar -xzf mediapipe-tasks-vision-*.tgz
           cp package/wasm/vision_wasm_internal.wasm "$WWW/mediapipe/"
@@ -55,9 +70,7 @@ jobs:
           gradle-version: "8.5"
 
       - name: Build debug APK
-        run: |
-          set -euo pipefail
-          gradle assembleDebug --stacktrace
+        run: gradle assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
