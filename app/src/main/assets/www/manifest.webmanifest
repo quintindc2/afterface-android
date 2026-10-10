@@ -1,0 +1,18 @@
+{
+  "name": "Afterface",
+  "short_name": "Afterface",
+  "description": "Swap a portrait onto a video clip on your phone, offline.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f0e0c",
+  "theme_color": "#0f0e0c",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
