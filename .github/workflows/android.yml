@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -23,6 +23,9 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: tools platform-tools platforms;android-34 build-tools;34.0.0
+          log-accepted-android-sdk-licenses: true
 
       - name: Fetch MediaPipe model and WASM binaries
         run: |
@@ -39,23 +42,22 @@ jobs:
           tar -xzf mediapipe-tasks-vision-*.tgz
           cp package/wasm/vision_wasm_internal.wasm "$WWW/mediapipe/"
           cp package/wasm/vision_wasm_nosimd_internal.wasm "$WWW/mediapipe/"
-          # Keep JS glue in sync if missing from repo
-          cp -n package/wasm/vision_wasm_internal.js "$WWW/mediapipe/" || true
-          cp -n package/wasm/vision_wasm_nosimd_internal.js "$WWW/mediapipe/" || true
-          cp -n package/vision_bundle.mjs "$WWW/mediapipe/" || true
+          cp package/wasm/vision_wasm_internal.js "$WWW/mediapipe/"
+          cp package/wasm/vision_wasm_nosimd_internal.js "$WWW/mediapipe/"
+          cp package/vision_bundle.mjs "$WWW/mediapipe/"
           rm -rf package mediapipe-tasks-vision-*.tgz
 
           ls -lh "$WWW/models" "$WWW/mediapipe"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.5"
 
-      - name: Generate wrapper and build debug APK
+      - name: Build debug APK
         run: |
           set -euo pipefail
-          gradle wrapper --gradle-version 8.5
-          chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          gradle assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
