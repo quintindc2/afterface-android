@@ -20,15 +20,21 @@ jobs:
           set -euo pipefail
           SRC="app/src/main/assets/www/_src"
           OUT="app/src/main/assets/www/app.js"
-          if [ -d "$SRC" ] && ls "$SRC"/t*.js >/dev/null 2>&1; then
-            cat $(ls "$SRC"/t*.js | sort -V) > "$OUT"
+
+          if [ -d "$SRC" ] && ls "$SRC"/gz_*.b64 >/dev/null 2>&1; then
+            echo "Decoding gzip-compressed engine…"
+            cat $(ls "$SRC"/gz_*.b64 | sort -V) | base64 -d | gzip -d > "$OUT"
             echo "Assembled engine: $(wc -c < "$OUT") bytes"
-            # Must include core functions
             grep -q paintFace "$OUT"
             grep -q replaceFace "$OUT"
             grep -q delaunay "$OUT"
+            grep -q getLandmarker "$OUT"
+          elif [ -d "$SRC" ] && ls "$SRC"/t*.js >/dev/null 2>&1; then
+            cat $(ls "$SRC"/t*.js | sort -V) > "$OUT"
+            echo "Assembled engine from JS parts: $(wc -c < "$OUT") bytes"
+            grep -q paintFace "$OUT"
           else
-            echo "WARNING: source parts missing; using existing app.js"
+            echo "WARNING: engine source missing"
             wc -c "$OUT" || true
           fi
 
@@ -62,7 +68,7 @@ jobs:
           cp package/vision_bundle.mjs "$WWW/mediapipe/"
           rm -rf package mediapipe-tasks-vision-*.tgz
 
-          ls -lh "$WWW/models" "$WWW/mediapipe"
+          ls -lh "$WWW/models" "$WWW/mediapipe" "$WWW/app.js"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
